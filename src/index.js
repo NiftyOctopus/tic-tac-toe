@@ -48,7 +48,7 @@ class Game extends React.Component {
         super(props)
         
         this.state = {
-            history: [{ squares: Array(9).fill(null) }],
+            history: [{ squares: Array(9).fill(null), i: null }],
             xIsNext: true, move: 0
         }
     }
@@ -64,7 +64,7 @@ class Game extends React.Component {
         squares[i] = this.state.xIsNext ? 'X' : 'O'
 
         this.setState({
-            history: history.concat([{ squares: squares }]),
+            history: history.concat([{ squares: squares, i }]),
             xIsNext: !this.state.xIsNext,
             move:    history.length
         })
@@ -73,6 +73,12 @@ class Game extends React.Component {
     jumpTo(move) {
         console.log('Jumping to ' + move)
         this.setState({ move, xIsNext: (move % 2) === 0 })
+    }
+
+    getCoords(snapshot) {
+        const col = (snapshot.i % 3) + 1
+        const row = Math.floor(snapshot.i / 3) + 1
+        return '(' + col + ', ' + row + ')'
     }
 
     render() {
@@ -89,10 +95,16 @@ class Game extends React.Component {
         }
 
         const moves = history.map((snapshot, i) => {
-            const msg = i ? 'Go to move ' + i : 'Reset game'
+            const who = snapshot.squares[snapshot.i]
+            const msg = i ? 'Go to move ' + i + ' at ' + this.getCoords(snapshot) + ' by ' + who : 'Go to game start'
 
             return (
-                <li key={i}><button onClick={() => this.jumpTo(i)}>{msg}</button></li>
+                <li key={i}>
+                    <button
+                        onClick={() => this.jumpTo(i)}
+                        style={{ fontWeight: this.state.move === i ? 'bold' : 'normal' }}
+                    >{msg}</button>
+                </li>
             )
         })
 
@@ -105,7 +117,7 @@ class Game extends React.Component {
                 <div className='game-info'>
                     <div>Current Move: {this.state.move}</div>
                     <div>{status}</div>
-                    <ol>{moves}</ol>
+                    <ul>{moves}</ul>
                 </div>
             </div>
         )
